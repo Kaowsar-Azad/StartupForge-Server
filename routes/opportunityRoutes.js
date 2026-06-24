@@ -144,10 +144,15 @@ router.post("/", verifyToken, verifyFounder, async (req, res) => {
       }
     }
 
+    // Convert comma-separated string into an array of trimmed strings
+    const skillsArray = typeof required_skills === "string"
+      ? required_skills.split(",").map((s) => s.trim()).filter(Boolean)
+      : required_skills;
+
     const opportunity = new Opportunity({
       startup_id,
       role_title,
-      required_skills,
+      required_skills: skillsArray,
       work_type,
       commitment_level,
       deadline,
@@ -172,6 +177,10 @@ router.put("/:id", verifyToken, verifyFounder, async (req, res) => {
     }
 
     const updates = req.body;
+    if (updates.required_skills && typeof updates.required_skills === "string") {
+      updates.required_skills = updates.required_skills.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+
     const updated = await Opportunity.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true,

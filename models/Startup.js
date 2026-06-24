@@ -8,7 +8,7 @@ const startupSchema = new mongoose.Schema(
     description: { type: String, required: true },
     funding_stage: {
       type: String,
-      enum: ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+"],
+      enum: ["Idea/Pre-Seed", "Seed", "Series A+", "Bootstrapped"],
       required: true,
     },
     founder_email: { type: String, required: true },
