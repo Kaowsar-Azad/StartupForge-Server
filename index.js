@@ -2,8 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const connectDB = require("./config/db");
-const { auth } = require("./config/auth");
+const { connectDB, connectMongoClient } = require("./config/db");
+const { createAuth } = require("./config/auth");
 const { toNodeHandler } = require("better-auth/node");
 
 // Route imports
@@ -17,9 +17,6 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-connectDB();
-
 // CORS Configuration
 const corsOptions = {
   origin: [
@@ -32,13 +29,18 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Better Auth handler - must be before body parsers for webhook compatibility
-app.all("/api/better-auth/*", toNodeHandler(auth));
-
 // Body Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+let authHandler;
+app.all(/^\/api\/auth\/better-auth/, (req, res, next) => {
+  if (!authHandler) {
+    return res.status(503).json({ message: "Authentication service not ready" });
+  }
+  return authHandler(req, res, next);
+});
 
 // Health check route
 app.get("/", (req, res) => {
@@ -64,6 +66,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 StartupForge Server running on http://localhost:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    await connectMongoClient();
+    const auth = createAuth();
+    authHandler = toNodeHandler(auth);
+
+    app.listen(PORT, () => {
+      console.log(`🚀 StartupForge Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
