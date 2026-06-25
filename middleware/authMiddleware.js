@@ -4,16 +4,21 @@ const User = require("../models/User");
 // Verify JWT Token Middleware
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
+  console.log("verifyToken: Received cookie token:", token ? "Token Exists" : "No Token");
   if (!token) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("verifyToken: Decoded token email:", decoded.email, "role:", decoded.role);
     const user = await User.findOne({ email: decoded.email });
 
     if (!user) {
+      console.log("verifyToken: User not found in MongoDB for email:", decoded.email);
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
+
+    console.log("verifyToken: User found in MongoDB. Email:", user.email, "Role in DB:", user.role);
 
     if (user.isBlocked) {
       return res
@@ -29,6 +34,7 @@ const verifyToken = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error("verifyToken error:", error);
     return res.status(403).json({ message: "Forbidden: Invalid token" });
   }
 };
@@ -43,6 +49,7 @@ const verifyAdmin = (req, res, next) => {
 
 // Verify Founder Role Middleware
 const verifyFounder = (req, res, next) => {
+  console.log("verifyFounder: req.user email:", req.user?.email, "role:", req.user?.role);
   if (req.user?.role !== "founder" && req.user?.role !== "admin") {
     return res.status(403).json({ message: "Forbidden: Founder access required" });
   }
