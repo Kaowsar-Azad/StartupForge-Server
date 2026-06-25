@@ -3,6 +3,10 @@ const { mongodbAdapter } = require("@better-auth/mongo-adapter");
 const { mongoClient, dbName } = require("./db");
 
 const createAuth = () => {
+  if (!mongoClient) {
+    console.error("❌ mongoClient is null. Skipping Better Auth configuration.");
+    return null;
+  }
   const db = mongoClient.db(dbName);
 
   return betterAuth({

@@ -49,12 +49,13 @@ const initPromise = (async () => {
     await connectDB();
     await connectMongoClient();
     const auth = createAuth();
-    authHandler = toNodeHandler(auth);
+    if (auth) {
+      authHandler = toNodeHandler(auth);
+    }
     isInitialized = true;
     console.log("🚀 StartupForge Server successfully initialized DB & Auth client");
   } catch (err) {
     console.error("❌ StartupForge Server initialization error:", err.message);
-    throw err;
   }
 })();
 
