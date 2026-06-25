@@ -42,9 +42,36 @@ app.all(/^\/api\/auth\/better-auth/, (req, res, next) => {
   return authHandler(req, res, next);
 });
 
-// Health check route
+// Database & Auth lazy initialization middleware
+let isInitialized = false;
+const initPromise = (async () => {
+  try {
+    await connectDB();
+    await connectMongoClient();
+    const auth = createAuth();
+    authHandler = toNodeHandler(auth);
+    isInitialized = true;
+    console.log("🚀 StartupForge Server successfully initialized DB & Auth client");
+  } catch (err) {
+    console.error("❌ StartupForge Server initialization error:", err.message);
+    throw err;
+  }
+})();
+
+app.use(async (req, res, next) => {
+  try {
+    if (!isInitialized) {
+      await initPromise;
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Health check route (moved after init middleware so it verifies DB connection too)
 app.get("/", (req, res) => {
-  res.json({ message: "🚀 StartupForge Server is running!", status: "OK" });
+  res.json({ message: "🚀 StartupForge Server is running!", status: "OK", initialized: isInitialized });
 });
 
 // API Routes
@@ -66,20 +93,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
-const startServer = async () => {
-  try {
-    await connectDB();
-    await connectMongoClient();
-    const auth = createAuth();
-    authHandler = toNodeHandler(auth);
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 StartupForge Server running on http://localhost:${PORT}`);
+  });
+}
 
-    app.listen(PORT, () => {
-      console.log(`🚀 StartupForge Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("❌ Failed to start server:", error.message);
-    process.exit(1);
-  }
-};
+module.exports = app;
 
-startServer();
