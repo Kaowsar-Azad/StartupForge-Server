@@ -33,9 +33,7 @@ router.post("/jwt", async (req, res) => {
         .json({ message: "Your account has been blocked. Contact the administrator." });
     }
 
-    if (role && user.role !== role) {
-      user.role = role;
-    }
+    // Keep name and image synced, but NEVER let client overwrite/downgrade the role
     if (name && user.name !== name) {
       user.name = name;
     }
