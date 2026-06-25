@@ -35,16 +35,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-let authHandler;
-app.all(/^\/api\/auth\/better-auth/, (req, res, next) => {
-  if (!authHandler) {
-    return res.status(503).json({ message: "Authentication service not ready" });
-  }
-  return authHandler(req, res, next);
-});
-
 // Database & Auth lazy initialization middleware
 let isInitialized = false;
+let authHandler;
 const initPromise = (async () => {
   try {
     await connectDB();
@@ -70,6 +63,13 @@ app.use(async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+app.all(/^\/api\/auth\/better-auth/, (req, res, next) => {
+  if (!authHandler) {
+    return res.status(503).json({ message: "Authentication service not ready" });
+  }
+  return authHandler(req, res, next);
 });
 
 // Health check route (moved after init middleware so it verifies DB connection too)
