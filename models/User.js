@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
       default: "collaborator",
     },
     isBlocked: { type: Boolean, default: false },
+    plan: { type: String, enum: ["free", "premium"], default: "free" },
   },
   { timestamps: true }
 );

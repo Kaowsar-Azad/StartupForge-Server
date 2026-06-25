@@ -11,12 +11,12 @@ const opportunitySchema = new mongoose.Schema(
     required_skills: [{ type: String }],
     work_type: {
       type: String,
-      enum: ["Remote", "Hybrid", "On-site"],
+      enum: ["Remote", "Hybrid", "Onsite", "On-site"],
       required: true,
     },
     commitment_level: {
       type: String,
-      enum: ["Full-time", "Part-time", "Freelance"],
+      enum: ["Full-time", "Part-time", "Contract", "Internship", "Freelance"],
       required: true,
     },
     deadline: { type: Date, required: true },

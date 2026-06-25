@@ -1,14 +1,32 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 // Verify JWT Token Middleware
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
   if (!token) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    if (user.isBlocked) {
+      return res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .status(403)
+        .json({ message: "Forbidden: Your account is blocked" });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     return res.status(403).json({ message: "Forbidden: Invalid token" });

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Stripe = require("stripe");
 const Payment = require("../models/Payment");
+const User = require("../models/User");
 const { verifyToken, verifyAdmin, verifyFounder } = require("../middleware/authMiddleware");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -10,30 +11,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 router.post("/create-checkout-session", verifyToken, verifyFounder, async (req, res) => {
   try {
     const { email } = req.user;
+    const { plan = "monthly" } = req.body;
 
-    // Check if already paid
-    const existingPayment = await Payment.findOne({
-      user_email: email,
-      payment_status: "success",
-    });
-    if (existingPayment) {
+    // Check if already premium in User collection
+    const userDoc = await User.findOne({ email });
+    if (userDoc && userDoc.plan === "premium") {
       return res.status(400).json({ message: "You have already upgraded to Premium" });
+    }
+
+    const priceId = plan === "yearly" ? process.env.STRIPE_YEARLY_PRICE_ID : process.env.STRIPE_MONTHLY_PRICE_ID;
+
+    if (!priceId) {
+      return res.status(400).json({ message: `Stripe Price ID for ${plan} plan is not configured in server environment variables.` });
     }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      mode: "payment",
+      mode: "subscription",
       customer_email: email,
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "StartupForge Premium",
-              description: "Unlock unlimited opportunity postings for your startup",
-            },
-            unit_amount: 1999, // $19.99
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -41,6 +39,7 @@ router.post("/create-checkout-session", verifyToken, verifyFounder, async (req, 
       cancel_url: `${process.env.CLIENT_URL || "http://localhost:3000"}/dashboard/founder`,
       metadata: {
         user_email: email,
+        plan: plan,
       },
     });
 
@@ -57,14 +56,18 @@ router.post("/confirm", verifyToken, async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
     if (session.payment_status === "paid") {
+      const email = session.customer_email || session.metadata.user_email;
+
       // Check if already saved
       const existing = await Payment.findOne({ transaction_id: session.id });
       if (existing) {
+        // Double check user plan is updated
+        await User.findOneAndUpdate({ email }, { plan: "premium" });
         return res.json({ message: "Payment already recorded", payment: existing });
       }
 
       const payment = new Payment({
-        user_email: session.customer_email || session.metadata.user_email,
+        user_email: email,
         amount: session.amount_total / 100,
         transaction_id: session.id,
         payment_status: "success",
@@ -72,6 +75,10 @@ router.post("/confirm", verifyToken, async (req, res) => {
       });
 
       const saved = await payment.save();
+      
+      // Set user's plan to premium in database
+      await User.findOneAndUpdate({ email }, { plan: "premium" });
+
       res.json({ message: "Payment confirmed successfully", payment: saved });
     } else {
       res.status(400).json({ message: "Payment not completed" });
@@ -97,14 +104,11 @@ router.get("/", verifyToken, verifyAdmin, async (req, res) => {
 router.get("/check/:email", verifyToken, verifyFounder, async (req, res) => {
   try {
     const { email } = req.params;
-    const payment = await Payment.findOne({
-      user_email: email,
-      payment_status: "success",
-    });
+    const user = await User.findOne({ email });
 
     res.json({
-      isPremium: !!payment,
-      payment: payment || null,
+      isPremium: user?.plan === "premium",
+      payment: null,
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to check payment status", error: error.message });

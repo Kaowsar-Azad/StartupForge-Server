@@ -131,12 +131,8 @@ router.post("/", verifyToken, verifyFounder, async (req, res) => {
     // Premium gate: check if founder already has 3 opportunities
     const existingCount = await Opportunity.countDocuments({ startup_id });
     if (existingCount >= 3) {
-      // Check if founder has paid
-      const payment = await Payment.findOne({
-        user_email: req.user.email,
-        payment_status: "success",
-      });
-      if (!payment) {
+      // Check if user's plan is premium
+      if (req.user.plan !== "premium") {
         return res.status(402).json({
           message: "You have reached the free limit (3 opportunities). Please upgrade to Premium to post more.",
           requiresPayment: true,
