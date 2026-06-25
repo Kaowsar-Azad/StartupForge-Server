@@ -4,7 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { connectDB, connectMongoClient } = require("./config/db");
 const { createAuth } = require("./config/auth");
-const { toNodeHandler } = require("better-auth/node");
+
 
 // Route imports
 const authRoutes = require("./routes/authRoutes");
@@ -48,8 +48,9 @@ const initPromise = (async () => {
   try {
     await connectDB();
     await connectMongoClient();
-    const auth = createAuth();
+    const auth = await createAuth();
     if (auth) {
+      const { toNodeHandler } = await import("better-auth/node");
       authHandler = toNodeHandler(auth);
     }
     isInitialized = true;

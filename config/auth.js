@@ -1,13 +1,15 @@
-const { betterAuth } = require("better-auth");
-const { mongodbAdapter } = require("@better-auth/mongo-adapter");
 const { mongoClient, dbName } = require("./db");
 
-const createAuth = () => {
+const createAuth = async () => {
   if (!mongoClient) {
     console.error("❌ mongoClient is null. Skipping Better Auth configuration.");
     return null;
   }
   const db = mongoClient.db(dbName);
+
+  // Dynamically import better-auth packages (ES modules)
+  const { betterAuth } = await import("better-auth");
+  const { mongodbAdapter } = await import("@better-auth/mongo-adapter");
 
   return betterAuth({
     database: mongodbAdapter(db),
