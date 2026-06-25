@@ -21,7 +21,8 @@ const PORT = process.env.PORT || 5000;
 const corsOptions = {
   origin: [
     process.env.CLIENT_URL || "http://localhost:3000",
-    "https://startupforge.vercel.app", // Add your deployed client URL here
+    "https://startupforge.vercel.app", 
+    "https://startup-forge-client.vercel.app",
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -54,9 +55,9 @@ const initPromise = (async () => {
       authHandler = toNodeHandler(auth);
     }
     isInitialized = true;
-    console.log("🚀 StartupForge Server successfully initialized DB & Auth client");
+    console.log("StartupForge Server successfully initialized DB & Auth client");
   } catch (err) {
-    console.error("❌ StartupForge Server initialization error:", err.message);
+    console.error("StartupForge Server initialization error:", err.message);
   }
 })();
 
