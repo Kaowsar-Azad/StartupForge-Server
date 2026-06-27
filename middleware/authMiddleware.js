@@ -1,20 +1,31 @@
-const jwt = require("jsonwebtoken");
+const { createRemoteJWKSet, jwtVerify } = require("jose");
 const User = require("../models/User");
 
-// Verify JWT Token Middleware
+let JWKS;
+const getJWKS = () => {
+  if (!JWKS) {
+    const jwksUrl = `${process.env.BETTER_AUTH_URL || "http://localhost:5000/api/auth/better-auth"}/jwks`;
+    console.log("Initializing JWKS Set with URL:", jwksUrl);
+    JWKS = createRemoteJWKSet(new URL(jwksUrl));
+  }
+  return JWKS;
+};
+
+// Verify JWT Token Middleware via JWKS
 const verifyToken = async (req, res, next) => {
-  const token = req.cookies?.token;
-  console.log("verifyToken: Received cookie token:", token ? "Token Exists" : "No Token");
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  console.log("verifyToken: Received Authorization header:", authHeader ? "Header Exists" : "No Header");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
+  const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("verifyToken: Decoded token email:", decoded.email, "role:", decoded.role);
-    const user = await User.findOne({ email: decoded.email });
+    const { payload } = await jwtVerify(token, getJWKS());
+    console.log("verifyToken: Decoded token email:", payload.email, "role:", payload.role);
+    const user = await User.findOne({ email: payload.email });
 
     if (!user) {
-      console.log("verifyToken: User not found in MongoDB for email:", decoded.email);
+      console.log("verifyToken: User not found in MongoDB for email:", payload.email);
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
 
@@ -22,11 +33,6 @@ const verifyToken = async (req, res, next) => {
 
     if (user.isBlocked) {
       return res
-        .clearCookie("token", {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-        })
         .status(403)
         .json({ message: "Forbidden: Your account is blocked" });
     }

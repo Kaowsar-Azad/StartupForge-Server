@@ -7,7 +7,12 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "keywords": ["startup", "team-builder", "express", "mongodb"],
+  "keywords": [
+    "startup",
+    "team-builder",
+    "express",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -18,9 +23,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.2.1",
+    "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.5",
     "mongodb": "^7.3.0",
+    "mongoose": "^8.9.5",
     "nodemon": "^3.1.14",
     "stripe": "^17.6.0"
   }

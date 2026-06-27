@@ -10,12 +10,16 @@ const createAuth = async () => {
   // Dynamically import better-auth packages (ES modules)
   const { betterAuth } = await import("better-auth");
   const { mongodbAdapter } = await import("@better-auth/mongo-adapter");
+  const { jwt } = await import("better-auth/plugins");
 
   return betterAuth({
     database: mongodbAdapter(db),
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
     trustedOrigins: [process.env.CLIENT_URL || "http://localhost:3000"],
+    plugins: [
+      jwt(),
+    ],
 
     emailAndPassword: {
       enabled: true,
