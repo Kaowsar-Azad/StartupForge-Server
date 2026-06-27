@@ -38,14 +38,15 @@ app.use(cookieParser());
 // Database & Auth lazy initialization middleware
 let isInitialized = false;
 let authHandler;
+let globalAuth;
 const initPromise = (async () => {
   try {
     await connectDB();
     await connectMongoClient();
-    const auth = await createAuth();
-    if (auth) {
+    globalAuth = await createAuth();
+    if (globalAuth) {
       const { toNodeHandler } = await import("better-auth/node");
-      authHandler = toNodeHandler(auth);
+      authHandler = toNodeHandler(globalAuth);
     }
     isInitialized = true;
     console.log("StartupForge Server successfully initialized DB & Auth client");
@@ -70,6 +71,28 @@ app.all(/^\/api\/auth\/better-auth/, (req, res, next) => {
     return res.status(503).json({ message: "Authentication service not ready" });
   }
   return authHandler(req, res, next);
+});
+
+// Custom GET /api/auth/token endpoint to retrieve JWT token
+app.get("/api/auth/token", async (req, res) => {
+  if (!globalAuth) {
+    return res.status(503).json({ message: "Authentication service not ready" });
+  }
+  try {
+    const result = await globalAuth.api.getToken({
+      headers: req.headers,
+    });
+    if (!result || !result.token) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+    res.json({ success: true, token: result.token });
+  } catch (error) {
+    if (error.statusCode === 401 || error.status === "UNAUTHORIZED") {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    console.error("Error generating token:", error);
+    res.status(500).json({ message: "Failed to generate token" });
+  }
 });
 
 // Health check route (moved after init middleware so it verifies DB connection too)
