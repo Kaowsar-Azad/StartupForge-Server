@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
     const { search, work_type, industry, page = 1, limit = 9 } = req.query;
     const filter = {};
 
-    // $regex search — searches role_title and required_skills
+    // $regex search
     if (search) {
       filter.$or = [
         { role_title: { $regex: search, $options: "i" } },
@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
       ];
     }
 
-    // $in filter — Work Type
+    // $in filter 
     if (work_type) {
       const types = work_type.split(",");
       filter.work_type = { $in: types };
