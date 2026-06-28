@@ -1,9 +1,9 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const Stripe = require("stripe");
-const Payment = require("../models/Payment");
-const User = require("../models/User");
-const { verifyToken, verifyAdmin, verifyFounder } = require("../middleware/authMiddleware");
+import Stripe from "stripe";
+import Payment from "../models/Payment.js";
+import User from "../models/User.js";
+import { verifyToken, verifyAdmin, verifyFounder } from "../middleware/authMiddleware.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -115,4 +115,4 @@ router.get("/check/:email", verifyToken, verifyFounder, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

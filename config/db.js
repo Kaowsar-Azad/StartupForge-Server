@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { MongoClient } = require("mongodb");
+import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || "startupforge";
@@ -35,4 +35,4 @@ const connectMongoClient = async () => {
   }
 };
 
-module.exports = { connectDB, connectMongoClient, mongoClient, dbName };
+export { connectDB, connectMongoClient, mongoClient, dbName };

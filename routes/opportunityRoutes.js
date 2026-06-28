@@ -1,9 +1,9 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const Opportunity = require("../models/Opportunity");
-const Startup = require("../models/Startup");
-const Payment = require("../models/Payment");
-const { verifyToken, verifyFounder } = require("../middleware/authMiddleware");
+import Opportunity from "../models/Opportunity.js";
+import Startup from "../models/Startup.js";
+import Payment from "../models/Payment.js";
+import { verifyToken, verifyFounder } from "../middleware/authMiddleware.js";
 
 // GET /api/opportunities - Get all opportunities (public)
 // Supports: ?search=, ?work_type=, ?industry=, ?page=, ?limit=
@@ -206,4 +206,4 @@ router.delete("/:id", verifyToken, verifyFounder, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

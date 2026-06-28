@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 // POST /api/auth/jwt - Deprecated (Replaced by Better Auth token)
 router.post("/jwt", (req, res) => {
@@ -19,4 +19,4 @@ router.post("/logout", (req, res) => {
     .json({ success: true, message: "Logged out successfully" });
 });
 
-module.exports = router;
+export default router;

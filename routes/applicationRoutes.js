@@ -1,9 +1,9 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const Application = require("../models/Application");
-const Opportunity = require("../models/Opportunity");
-const Startup = require("../models/Startup");
-const { verifyToken, verifyFounder, verifyCollaborator } = require("../middleware/authMiddleware");
+import Application from "../models/Application.js";
+import Opportunity from "../models/Opportunity.js";
+import Startup from "../models/Startup.js";
+import { verifyToken, verifyFounder, verifyCollaborator } from "../middleware/authMiddleware.js";
 
 // GET /api/applications - Get all applications for a founder's opportunities
 router.get("/", verifyToken, verifyFounder, async (req, res) => {
@@ -125,4 +125,4 @@ router.patch("/reject/:id", verifyToken, verifyFounder, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

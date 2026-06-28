@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const Startup = require("../models/Startup");
-const { verifyToken, verifyFounder, verifyAdmin } = require("../middleware/authMiddleware");
+import Startup from "../models/Startup.js";
+import { verifyToken, verifyFounder, verifyAdmin } from "../middleware/authMiddleware.js";
 
 // GET /api/startups - Get all approved startups (public)
 router.get("/", async (req, res) => {
@@ -172,4 +172,4 @@ router.get("/admin/all", verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

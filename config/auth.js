@@ -1,4 +1,4 @@
-const { mongoClient, dbName } = require("./db");
+import { mongoClient, dbName } from "./db.js";
 
 const createAuth = async () => {
   if (!mongoClient) {
@@ -58,4 +58,4 @@ const createAuth = async () => {
   });
 };
 
-module.exports = { createAuth };
+export { createAuth };

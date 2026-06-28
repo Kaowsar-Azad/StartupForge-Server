@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const User = require("../models/User");
-const { verifyToken, verifyAdmin } = require("../middleware/authMiddleware");
+import User from "../models/User.js";
+import { verifyToken, verifyAdmin } from "../middleware/authMiddleware.js";
 
 // GET /api/users - Get all users (Admin only)
 router.get("/", verifyToken, verifyAdmin, async (req, res) => {
@@ -91,4 +91,4 @@ router.patch("/unblock/:id", verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
