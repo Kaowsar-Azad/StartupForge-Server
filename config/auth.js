@@ -15,7 +15,9 @@ const createAuth = async () => {
   return betterAuth({
     database: mongodbAdapter(db),
     secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL,
+    baseURL: process.env.NODE_ENV === "production" 
+      ? (process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/api/auth/better-auth` : process.env.BETTER_AUTH_URL) 
+      : process.env.BETTER_AUTH_URL,
     trustedOrigins: [
       process.env.CLIENT_URL || "http://localhost:3000",
       "https://startupforge.vercel.app",

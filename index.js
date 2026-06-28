@@ -97,7 +97,7 @@ app.get("/api/auth/token", async (req, res) => {
 
 // Health check route (moved after init middleware so it verifies DB connection too)
 app.get("/", (req, res) => {
-  res.json({ message: "🚀 StartupForge Server is running!", status: "OK", initialized: isInitialized });
+  res.json({ message: "StartupForge Server is running!", status: "OK", initialized: isInitialized });
 });
 
 // API Routes
