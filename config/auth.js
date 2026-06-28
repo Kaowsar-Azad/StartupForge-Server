@@ -44,7 +44,7 @@ const createAuth = async () => {
       additionalFields: {
         role: {
           type: "string",
-          defaultValue: "collaborator",
+          defaultValue: "unassigned",
         },
         isBlocked: {
           type: "boolean",

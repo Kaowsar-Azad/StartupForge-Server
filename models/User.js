@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
     image: { type: String, default: "" },
     role: {
       type: String,
-      enum: ["founder", "collaborator", "admin"],
-      default: "collaborator",
+      enum: ["founder", "collaborator", "admin", "unassigned"],
+      default: "unassigned",
     },
     isBlocked: { type: Boolean, default: false },
     plan: { type: String, enum: ["free", "premium"], default: "free" },
