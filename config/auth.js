@@ -16,7 +16,11 @@ const createAuth = async () => {
     database: mongodbAdapter(db),
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
-    trustedOrigins: [process.env.CLIENT_URL || "http://localhost:3000"],
+    trustedOrigins: [
+      process.env.CLIENT_URL || "http://localhost:3000",
+      "https://startupforge.vercel.app",
+      "https://startup-forge-client.vercel.app"
+    ],
     plugins: [
       jwt(),
     ],
