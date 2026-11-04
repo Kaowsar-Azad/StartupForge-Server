@@ -9,12 +9,17 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Environment files
-.env
-.env.local
-.env.development
-.env.production
 .env*.local
 
 # OS Metadata
 .DS_Store
 Thumbs.db
+
+# Environment variables & secrets (added by GitHub Guardian)
+*.env
+!.env.example
+!.env.sample
+.envrc
+.venv/
+venv/
+config.bat
